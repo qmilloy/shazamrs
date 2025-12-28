@@ -1,6 +1,8 @@
 use crate::client::Shazam;
+use crate::constants::get_random_device;
 use crate::{ShazamError, models::RecognizeResponse};
 use shazamrs_core::Signature;
+use uuid::Uuid;
 
 impl Shazam {
     /// Recognize a song from an audio file path.
@@ -39,11 +41,19 @@ impl Shazam {
     /// Send a generated signature to the Shazam backend
     /// and deserialize the response.
     async fn send_signature(&self, signature: Signature) -> Result<RecognizeResponse, ShazamError> {
-        let url = "https://amp.shazam.com/discovery/v5/en/US/android/-/tag";
+        let url = format!(
+            "https://amp.shazam.com/discovery/v5/{language}/{endpoint_country}/{device}/-/tag/{uuid_1}/{uuid_2}?sync=true&webv3=true&sampling=true&connected=&shazamapiversion=v3&sharehub=true&hubv5minorversion=v5.1&hidelb=true&video=v3",
+            language = "en-US",
+            endpoint_country = "GB",
+            device = get_random_device(),
+            uuid_1 = Uuid::new_v4().to_string().to_uppercase(),
+            uuid_2 = Uuid::new_v4().to_string().to_uppercase()
+        );
 
         let response = self
             .client
             .post(url)
+            .headers(Shazam::generate_headers())
             .json(&signature)
             .send()
             .await?

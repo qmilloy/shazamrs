@@ -60,6 +60,7 @@
 //! Use at your own risk and comply with applicable laws and terms of service.
 
 mod client;
+mod constants;
 mod error;
 pub mod models;
 mod recognize;

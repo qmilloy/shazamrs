@@ -1,4 +1,8 @@
+use crate::constants::{self, get_random_user_agent};
 use reqwest::Client;
+use reqwest::header::{
+    ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, HeaderMap, HeaderName, HeaderValue, USER_AGENT,
+};
 use shazamrs_core::Recognizer;
 
 /// High-level Shazam client.
@@ -47,5 +51,25 @@ impl Shazam {
             recognizer: Recognizer::new(Some(seconds)),
             client: Client::new(),
         }
+    }
+
+    pub fn generate_headers() -> HeaderMap {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            HeaderName::from_static("x-shazam-platform"),
+            HeaderValue::from_static("IPHONE"),
+        );
+        headers.insert(
+            HeaderName::from_static("x-shazam-appversion"),
+            HeaderValue::from_static("14.1.0"),
+        );
+        headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
+        headers.insert(ACCEPT_LANGUAGE, HeaderValue::from_static("en-US"));
+        headers.insert(ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate"));
+        headers.insert(
+            USER_AGENT,
+            HeaderValue::from_static(get_random_user_agent()),
+        );
+        headers
     }
 }
