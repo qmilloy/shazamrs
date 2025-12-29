@@ -67,4 +67,3 @@ mod recognize;
 
 pub use client::Shazam;
 pub use error::ShazamError;
-pub use recognize::*;
