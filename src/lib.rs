@@ -1,16 +1,15 @@
-//! # shazamio
+//! # shazamrs
 //!
 //! A pure-Rust client for identifying music using Shazam’s public discovery API.
 //!
 //! This crate is composed of two layers:
 //!
-//! - **`shazamio-core`** — audio fingerprinting and signature generation
-//! - **`shazamio`** — network client, response models, and high-level API
+//! - **`shazamrs-core`** — audio fingerprinting and signature generation
+//! - **`shazamrs`** — network client, response models, and high-level API
 //!
 //! ## Features
 //!
 //! - Fully async (`tokio`)
-//! - No Python bindings or FFI
 //! - Typed, schema-safe responses
 //! - Minimal public API
 //!
