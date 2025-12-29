@@ -40,7 +40,7 @@
 //! ```text
 //! Audio (file/bytes)
 //!   ↓
-//! shazamio-core (fingerprinting)
+//! shazamrs-core (fingerprinting)
 //!   ↓
 //! HTTP (Shazam discovery API)
 //!   ↓
