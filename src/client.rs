@@ -1,4 +1,4 @@
-use crate::constants::{self, get_random_user_agent};
+use crate::constants::get_random_user_agent;
 use reqwest::Client;
 use reqwest::header::{
     ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, HeaderMap, HeaderName, HeaderValue, USER_AGENT,
