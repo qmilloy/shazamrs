@@ -1,4 +1,4 @@
-use crate::constants::get_random_user_agent;
+use crate::constants::{DEFAULT_BASE_URL, get_random_user_agent};
 use reqwest::Client;
 use reqwest::header::{
     ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, HeaderMap, HeaderName, HeaderValue, USER_AGENT,
@@ -13,10 +13,10 @@ use shazamrs_core::Recognizer;
 /// # Examples
 ///
 /// ```no_run
-/// use shazamrs::Shazam;
+/// use shazamrs::{Shazam, ShazamError};
 ///
 /// # #[tokio::main]
-/// # async fn main() -> anyhow::Result<()> {
+/// # async fn main() -> Result<(), ShazamError> {
 /// let shazam = Shazam::new();
 ///
 /// let result = shazam.recognize_path("song.mp3").await?;
@@ -29,6 +29,10 @@ use shazamrs_core::Recognizer;
 pub struct Shazam {
     pub(crate) recognizer: Recognizer,
     pub(crate) client: Client,
+    /// Base URL for Shazam's discovery API. Always [`DEFAULT_BASE_URL`]
+    /// outside of tests; overridable internally so tests can point
+    /// requests at a mock server instead of the real Shazam backend.
+    pub(crate) base_url: String,
 }
 
 impl Shazam {
@@ -38,6 +42,7 @@ impl Shazam {
         Self {
             recognizer: Recognizer::new(None),
             client: Client::new(),
+            base_url: DEFAULT_BASE_URL.to_string(),
         }
     }
 
@@ -50,6 +55,7 @@ impl Shazam {
         Self {
             recognizer: Recognizer::new(Some(seconds)),
             client: Client::new(),
+            base_url: DEFAULT_BASE_URL.to_string(),
         }
     }
 
@@ -76,5 +82,25 @@ impl Shazam {
             HeaderValue::from_static(get_random_user_agent()),
         );
         headers
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::constants::USER_AGENTS;
+
+    #[test]
+    fn generate_headers_sets_expected_values() {
+        let headers = Shazam::generate_headers();
+
+        assert_eq!(headers.get("x-shazam-platform").unwrap(), "IPHONE");
+        assert_eq!(headers.get("x-shazam-appversion").unwrap(), "14.1.0");
+        assert_eq!(headers.get(ACCEPT).unwrap(), "*/*");
+        assert_eq!(headers.get(ACCEPT_LANGUAGE).unwrap(), "en-US");
+        assert_eq!(headers.get(ACCEPT_ENCODING).unwrap(), "gzip, deflate");
+
+        let user_agent = headers.get(USER_AGENT).unwrap().to_str().unwrap();
+        assert!(USER_AGENTS.contains(&user_agent));
     }
 }

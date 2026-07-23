@@ -7,6 +7,12 @@
 
 use rand::seq::IndexedRandom;
 
+/// Default host for Shazam's discovery API.
+///
+/// Kept separate from the request path (see `Shazam::send_signature`) so
+/// tests can override it and point requests at a local mock server.
+pub const DEFAULT_BASE_URL: &str = "https://amp.shazam.com";
+
 /// Device platforms reported to Shazam's discovery API.
 pub const DEVICES: [&str; 3] = ["iphone", "android", "web"];
 
