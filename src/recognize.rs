@@ -93,6 +93,14 @@ mod tests {
         shazam
     }
 
+    /// A 1-second segment duration keeps signature generation over the
+    /// `Gloria.ogg` fixture fast in tests.
+    fn shazam_with_fast_segment_pointed_at(mock_server: &MockServer) -> Shazam {
+        let mut shazam = Shazam::with_segment_duration(1);
+        shazam.base_url = mock_server.uri();
+        shazam
+    }
+
     #[tokio::test]
     async fn send_signature_posts_and_parses_recognized_track() {
         let mock_server = MockServer::start().await;
@@ -146,5 +154,53 @@ mod tests {
         let result = shazam.send_signature(sample_signature()).await;
 
         assert!(matches!(result, Err(ShazamError::Http(_))));
+    }
+
+    #[tokio::test]
+    async fn recognize_path_generates_signature_and_returns_recognized_track() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "track": { "title": "Song Title", "subtitle": "Artist Name" },
+                "tagid": "ABCDEF",
+                "timestamp": 1700000000u64
+            })))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        let shazam = shazam_with_fast_segment_pointed_at(&mock_server);
+        let response = shazam
+            .recognize_path("examples/data/Gloria.ogg")
+            .await
+            .unwrap();
+
+        let track = response.track.expect("track should be present");
+        assert_eq!(track.title.as_deref(), Some("Song Title"));
+        assert_eq!(track.subtitle.as_deref(), Some("Artist Name"));
+    }
+
+    #[tokio::test]
+    async fn recognize_bytes_generates_signature_and_returns_recognized_track() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "track": { "title": "Song Title", "subtitle": "Artist Name" },
+                "tagid": "ABCDEF",
+                "timestamp": 1700000000u64
+            })))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        let audio = std::fs::read("examples/data/Gloria.ogg").expect("fixture should be readable");
+        let shazam = shazam_with_fast_segment_pointed_at(&mock_server);
+        let response = shazam.recognize_bytes(audio).await.unwrap();
+
+        let track = response.track.expect("track should be present");
+        assert_eq!(track.title.as_deref(), Some("Song Title"));
+        assert_eq!(track.subtitle.as_deref(), Some("Artist Name"));
     }
 }

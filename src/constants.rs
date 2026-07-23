@@ -526,3 +526,22 @@ pub fn get_random_user_agent() -> &'static str {
         None => "Dalvik/2.1.0 (Linux; U; Android 5.0.2; VS980 4G Build/LRX22G)",
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_random_device_always_returns_a_known_device() {
+        for _ in 0..50 {
+            assert!(DEVICES.contains(&get_random_device()));
+        }
+    }
+
+    #[test]
+    fn get_random_user_agent_always_returns_a_known_user_agent() {
+        for _ in 0..50 {
+            assert!(USER_AGENTS.contains(&get_random_user_agent()));
+        }
+    }
+}
