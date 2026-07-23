@@ -1,0 +1,3 @@
+[submodule "vendor/shazamrs-core"]
+	path = vendor/shazamrs-core
+	url = git@github.com:qmilloy/shazamrs-core.git

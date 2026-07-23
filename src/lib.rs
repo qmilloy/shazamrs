@@ -58,6 +58,8 @@
 //! This project is **not affiliated with or endorsed by Apple or Shazam**.
 //! Use at your own risk and comply with applicable laws and terms of service.
 
+#![warn(missing_docs)]
+
 mod client;
 mod constants;
 mod error;

@@ -1,7 +1,16 @@
+//! Request fingerprint pools used to mimic Shazam's official mobile clients.
+//!
+//! Shazam's discovery API is undocumented and only intended for its own
+//! apps, so requests here vary their device type and `User-Agent` (see
+//! [`get_random_device`] and [`get_random_user_agent`]) the same way the
+//! Python `ShazamIO` client this crate is inspired by does.
+
 use rand::seq::IndexedRandom;
 
+/// Device platforms reported to Shazam's discovery API.
 pub const DEVICES: [&str; 3] = ["iphone", "android", "web"];
 
+/// Pool of real-world `User-Agent` strings used to vary outgoing requests.
 pub const USER_AGENTS: [&str; 490] = [
     "Dalvik/2.1.0 (Linux; U; Android 5.0.2; VS980 4G Build/LRX22G)",
     "Dalvik/1.6.0 (Linux; U; Android 4.4.2; SM-T210 Build/KOT49H)",
@@ -495,6 +504,7 @@ pub const USER_AGENTS: [&str; 490] = [
     "Mozilla/5.0 (iPad; U; CPU OS 4_3_3 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Mobile/8J2",
 ];
 
+/// Pick a random entry from [`DEVICES`], defaulting to `"iphone"`.
 pub fn get_random_device() -> &'static str {
     match DEVICES.choose(&mut rand::rng()) {
         Some(i) => *i,
@@ -502,6 +512,8 @@ pub fn get_random_device() -> &'static str {
     }
 }
 
+/// Pick a random entry from [`USER_AGENTS`], defaulting to a fixed Android
+/// user agent.
 pub fn get_random_user_agent() -> &'static str {
     match USER_AGENTS.choose(&mut rand::rng()) {
         Some(i) => *i,

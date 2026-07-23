@@ -53,6 +53,11 @@ impl Shazam {
         }
     }
 
+    /// Build the HTTP headers required by Shazam's discovery API.
+    ///
+    /// Mimics an iPhone client: sets `x-shazam-platform`,
+    /// `x-shazam-appversion`, and a randomly-chosen `User-Agent` (see
+    /// [`crate::constants`]) alongside standard `Accept*` headers.
     pub fn generate_headers() -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(
