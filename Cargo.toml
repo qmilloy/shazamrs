@@ -8,7 +8,7 @@ name = "recognize-song"
 path = "examples/recognize-song.rs"
 
 [dependencies]
-shazamrs-core = { path = "../shazamrs-core" }
+shazamrs-core = { path = "vendor/shazamrs-core" }
 reqwest = { version = "0.12", features = ["json", "gzip", "deflate"] }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
