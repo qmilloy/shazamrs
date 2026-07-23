@@ -15,9 +15,9 @@ This crate is composed of two layers:
 ## Quick start
 
 ```rust
-use shazamrs::Shazam;
+use shazamrs::{Shazam, ShazamError};
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> Result<(), ShazamError> {
     let shazam = Shazam::new();
     let response = shazam.recognize_path("song.mp3").await?;
     if let Some(track) = response.track {

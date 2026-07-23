@@ -42,7 +42,8 @@ impl Shazam {
     /// and deserialize the response.
     async fn send_signature(&self, signature: Signature) -> Result<RecognizeResponse, ShazamError> {
         let url = format!(
-            "https://amp.shazam.com/discovery/v5/{language}/{endpoint_country}/{device}/-/tag/{uuid_1}/{uuid_2}?sync=true&webv3=true&sampling=true&connected=&shazamapiversion=v3&sharehub=true&hubv5minorversion=v5.1&hidelb=true&video=v3",
+            "{base_url}/discovery/v5/{language}/{endpoint_country}/{device}/-/tag/{uuid_1}/{uuid_2}?sync=true&webv3=true&sampling=true&connected=&shazamapiversion=v3&sharehub=true&hubv5minorversion=v5.1&hidelb=true&video=v3",
+            base_url = self.base_url,
             language = "en-US",
             endpoint_country = "GB",
             device = get_random_device(),
@@ -62,5 +63,88 @@ impl Shazam {
             .await?;
 
         Ok(response)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ShazamError;
+    use crate::client::Shazam;
+    use shazamrs_core::{Geolocation, Signature, SignatureSong};
+    use wiremock::matchers::method;
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    fn sample_signature() -> Signature {
+        Signature::new(
+            Geolocation::new(300, 45, 2),
+            SignatureSong::new(
+                10000,
+                1700000000,
+                "data:audio/vnd.shazam.sig;base64,AA==".to_string(),
+            ),
+            1700000000,
+            "Europe/Paris".to_string(),
+        )
+    }
+
+    async fn shazam_pointed_at(mock_server: &MockServer) -> Shazam {
+        let mut shazam = Shazam::new();
+        shazam.base_url = mock_server.uri();
+        shazam
+    }
+
+    #[tokio::test]
+    async fn send_signature_posts_and_parses_recognized_track() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "track": { "title": "Song Title", "subtitle": "Artist Name" },
+                "tagid": "ABCDEF",
+                "timestamp": 1700000000u64
+            })))
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        let shazam = shazam_pointed_at(&mock_server).await;
+        let response = shazam.send_signature(sample_signature()).await.unwrap();
+
+        let track = response.track.expect("track should be present");
+        assert_eq!(track.title.as_deref(), Some("Song Title"));
+        assert_eq!(track.subtitle.as_deref(), Some("Artist Name"));
+        assert_eq!(response.tagid.as_deref(), Some("ABCDEF"));
+    }
+
+    #[tokio::test]
+    async fn send_signature_handles_unrecognized_audio() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "timestamp": 1700000000u64
+            })))
+            .mount(&mock_server)
+            .await;
+
+        let shazam = shazam_pointed_at(&mock_server).await;
+        let response = shazam.send_signature(sample_signature()).await.unwrap();
+
+        assert!(response.track.is_none());
+    }
+
+    #[tokio::test]
+    async fn send_signature_returns_http_error_on_failure_status() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .respond_with(ResponseTemplate::new(500))
+            .mount(&mock_server)
+            .await;
+
+        let shazam = shazam_pointed_at(&mock_server).await;
+        let result = shazam.send_signature(sample_signature()).await;
+
+        assert!(matches!(result, Err(ShazamError::Http(_))));
     }
 }
