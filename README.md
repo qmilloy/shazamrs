@@ -56,6 +56,9 @@ Typed Rust response models
 - Response schemas may change over time
 - No guarantees of long-term API stability
 
+
+**NOTICE: This crate is being used to test out AI capabilities and AI workflows, and thus contains AI generated code.**
+
 ## Legal notice
 
 This project is **not affiliated with or endorsed by Apple or Shazam**.
