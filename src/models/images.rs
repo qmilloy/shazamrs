@@ -16,4 +16,7 @@ pub struct Images {
 
     /// High-resolution cover art.
     pub coverarthq: Option<String>,
+
+    /// Color palette for styling.
+    pub joecolor: Option<String>,
 }
